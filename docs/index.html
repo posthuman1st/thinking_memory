@@ -330,7 +330,11 @@ td b{color:var(--accent);font-weight:600}
 .signup-form{display:flex;flex-direction:column;gap:14px;padding:24px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.field input,.field select,.field textarea{font:16px var(--f-body);padding:11px 13px;border-radius:10px;border:1px solid var(--line-strong);background:var(--bg);color:var(--ink);width:100%;min-width:0}
+.field input,.field select,.field textarea{font:16px var(--f-body);padding:11px 13px;border-radius:10px;border:1px solid #4A5A7A;background:#121926;color:var(--ink);width:100%;min-width:0;transition:border-color .15s,box-shadow .15s}
+.field input:hover,.field select:hover,.field textarea:hover{border-color:#6A7C9E}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);outline:none}
+.field label{color:#B4BDCC}
+.signup-form{border-color:var(--line-strong)}
 .field textarea{resize:vertical;line-height:1.5}
 .field input::placeholder,.field textarea::placeholder{color:var(--muted)}
 .field input:user-invalid,.field.bad input{border-color:var(--path)}
@@ -758,7 +762,7 @@ html{scroll-behavior:smooth}
       <div class="field"><label for="s-email">Work email</label><input id="s-email" name="email" type="email" autocomplete="email" required></div>
       <div class="field"><label for="s-company">Company or project</label><input id="s-company" name="company" autocomplete="organization"></div>
       <div class="field">
-        <label for="s-interest">What are you looking at?</label>
+        <label for="s-interest">Interested in</label>
         <select id="s-interest" name="interest">
           <option value="app">Desktop app (free, research)</option>
           <option value="api">Memory API and SDK</option>
@@ -768,7 +772,7 @@ html{scroll-behavior:smooth}
           <option value="unsure">Not sure yet</option>
         </select>
       </div>
-      <div class="field"><label for="s-usecase">What would you point it at?</label><textarea id="s-usecase" name="usecase" rows="3" placeholder="A knowledge base, a customer graph, an agent’s memory…"></textarea></div>
+      <div class="field"><label for="s-usecase">Your use case</label><textarea id="s-usecase" name="usecase" rows="3" placeholder="A knowledge base, a customer graph, an agent’s memory… (optional)"></textarea></div>
       <input type="text" id="s-gotcha" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
       <div class="signup-actions">
         <button class="btn primary" type="submit" id="s-submit">Sign up for a call</button>
