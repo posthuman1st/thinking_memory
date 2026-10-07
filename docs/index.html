@@ -769,6 +769,7 @@ html{scroll-behavior:smooth}
         </select>
       </div>
       <div class="field"><label for="s-usecase">What would you point it at?</label><textarea id="s-usecase" name="usecase" rows="3" placeholder="A knowledge base, a customer graph, an agent’s memory…"></textarea></div>
+      <input type="text" id="s-gotcha" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
       <div class="signup-actions">
         <button class="btn primary" type="submit" id="s-submit">Sign up for a call</button>
         <span class="signup-note">We reply by email to set a time. No newsletter.</span>
@@ -796,10 +797,10 @@ html{scroll-behavior:smooth}
 
 <script>
 /* Fill these in to activate the channel buttons and the sign-up form.
-   signupEndpoint: an HTTPS URL that accepts a JSON POST of the form (Formspree, a worker, your own API).
+   signupEndpoint: an HTTPS URL that accepts a JSON POST of the form (here: Formspree; it answers JSON when sent Accept: application/json).
    contact: an email address; without an endpoint, the form opens a prefilled email to it.
    bookingUrl: a scheduling link (Calendly etc.) shown after a successful sign-up. */
-const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory", youtube:"", linkedin:"", contact:"", signupEndpoint:"", bookingUrl:"" };
+const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory", youtube:"", linkedin:"", contact:"", signupEndpoint:"https://formspree.io/f/xyekknzv", bookingUrl:"" };
 
 /* channels */
 (function(){
@@ -856,8 +857,17 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
     submit.disabled=true; submit.textContent='Sending…';
     try{
       if(CONFIG.signupEndpoint){
-        const r=await fetch(CONFIG.signupEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-        if(!r.ok)throw new Error('endpoint');
+        const subject='Early access: '+payload.name+(payload.company?' · '+payload.company:'');
+        const r=await fetch(CONFIG.signupEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+          body:JSON.stringify({...payload,_subject:subject,_gotcha:f('s-gotcha').value})});
+        if(!r.ok){
+          const e=new Error('endpoint');
+          try{const j=await r.json(), es=(j&&j.errors)||[];
+            if(es.some(x=>x.field==='email')){f('s-email').closest('.field').classList.add('bad');e.userMessage='That email address wasn’t accepted. Check it and try again.'}
+            else e.userMessage=es.map(x=>x.message).filter(Boolean).join('. ')||(j&&j.error)||'';
+          }catch(_){}
+          throw e;
+        }
         showDone('We’ll email you within a few days to book the call.');
       } else if(store){
         await store.db.doc('signups/'+store.id).set(payload);
@@ -868,7 +878,7 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
       try{localStorage.setItem('tm-signup','1')}catch(e){}
     }catch(e){
       if(store&&e&&e.code==='invalid_argument'){store=null;showDone('Thanks. One more step:','Almost there.');showContactFallback(payload);return}
-      err.textContent='That didn’t go through. Try again in a moment.'; err.hidden=false;
+      err.textContent=(e&&e.userMessage)||'That didn’t go through. Try again in a moment.'; err.hidden=false;
     }finally{ submit.disabled=false; submit.textContent='Sign up for a call'; }
   });
 })();
