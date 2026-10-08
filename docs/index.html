@@ -155,13 +155,12 @@ form.ask input::placeholder{color:var(--muted)}
 .voice{display:flex;align-items:center;gap:12px;margin-top:14px}
 .voice .dot{width:40px;height:40px;border-radius:50%;border:1px dashed var(--muted);display:grid;place-items:center;flex:none}
 
-.demo-soon{display:grid;grid-template-columns:1.3fr .7fr;gap:32px;align-items:center;padding:32px;border-color:var(--line-strong);border-style:dashed}
-.demo-soon > *{min-width:0}
-.demo-soon h3{font-size:clamp(26px,3vw,36px);margin-top:10px}
-.demo-soon p{margin-top:14px;font-size:16px;max-width:34em}
-.demo-soon .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
-.demo-soon-facts{margin-top:0;padding:16px 18px;background:var(--sunk);border:1px solid var(--line);border-radius:10px;align-self:stretch;align-content:center}
-@media (max-width:820px){.demo-soon{grid-template-columns:1fr;padding:24px}}
+.msg.bot .a.wait{color:var(--muted);font-size:15px}
+.msg.bot.note .a{font-size:15px;color:var(--text)}
+.meta a{color:var(--muted);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.meta a:hover{color:var(--ink)}
+form.ask button[disabled]{opacity:.6;cursor:progress}
+.side-note{margin-top:12px;font-size:13px;color:var(--muted)}
 
 /* how */
 .steps{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--accent)}
@@ -368,7 +367,7 @@ html{scroll-behavior:smooth}
     <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="5" cy="19" r="3" fill="#9CCBFF"/><circle cx="13" cy="7" r="3" fill="#FF7A45"/><circle cx="21" cy="17" r="3" fill="#9CCBFF"/><path d="M5 19 L13 7 L21 17" stroke="#FF7A45" stroke-width="2" fill="none"/></svg>
     Thinking Memory
   </a>
-  <div class="links"><a href="#demo">Demo · soon</a><a href="#how">How it thinks</a><a href="#proof">Proof</a><a href="#business">For business</a></div>
+  <div class="links"><a href="#demo">Live demo</a><a href="#how">How it thinks</a><a href="#proof">Proof</a><a href="#business">For business</a></div>
   <a class="btn primary" href="#early-access">Early access</a>
 </div></nav>
 
@@ -428,46 +427,30 @@ html{scroll-behavior:smooth}
 <section class="block" id="demo">
   <div class="sec-head">
     <div><div class="stage">Demo</div><h2>Ask the whole of Wikipedia.</h2></div>
-    <p>Every answer shows the path it took: each fact, its relation and where it came from. Tell it something about yourself and it chains your memory with Wikipedia in the same search.</p>
+    <p>Every answer shows the path it took: each fact, its relation and where it came from. Tell it something about yourself and it chains your memory with Wikipedia in the same search. This chat runs live on our server; nothing you type is kept.</p>
   </div>
-  <div class="demo-soon panel">
-    <div class="demo-soon-text">
-      <div class="eyebrow">Coming soon</div>
-      <h3>A live demo will appear here.</h3>
-      <p>Ask all of Wikipedia in a chat, then on a voice call, straight from this page. We are wiring the public endpoint now. Until it opens, the free desktop app is the way to try it on your own machine.</p>
-      <div class="ctas"><a class="btn primary" href="#early-access">Get early access</a><a class="btn" href="#business">About the desktop app</a></div>
-    </div>
-    <div class="demo-soon-facts kv">
-      <span>Entities (each has a Wikipedia article)</span><span>4.59M</span>
-      <span>Facts</span><span>20.6M</span>
-      <span>Answer, with its evidence chain</span><span>4–5 ms</span>
-      <span>Network calls per answer</span><span>0</span>
-      <span>LLM calls per answer</span><span>0</span>
-    </div>
-  </div>
-  <div class="demo" id="demo-live" hidden>
+  <div class="demo" id="demo-live">
     <div class="chat">
-      <div class="chat-head"><span class="chat-name">Wikipedia memory</span><span class="pill" title="Each answer, chain and time below was recorded from the engine on a laptop CPU (median of 5 runs). The live endpoint opens with the public beta.">Preview · recorded from the engine</span></div>
+      <div class="chat-head"><span class="chat-name">Wikipedia memory</span><span class="pill" id="demo-status" title="Answers come live from the engine on our server (api.1agi.io). Nothing you type is stored or used for training, and this chat’s memory ends when you leave the page.">Live · nothing stored</span></div>
       <div class="log" id="log" aria-live="polite"></div>
       <div class="suggest" id="suggest"></div>
       <form class="ask" id="ask">
         <label for="q" style="position:absolute;left:-9999px">Your question</label>
-        <input id="q" autocomplete="off" placeholder="Ask about any person, place, film, company…">
-        <button class="btn primary" type="submit">Ask</button>
+        <input id="q" autocomplete="off" maxlength="400" placeholder="Ask about any person, place, film, company…">
+        <button class="btn primary" type="submit" id="ask-btn">Ask</button>
       </form>
     </div>
     <div class="side">
       <div class="panel">
         <h3>What’s loaded</h3>
         <div class="kv">
-          <span>Entities (each has a Wikipedia article)</span><span>4.59M</span>
-          <span>Facts</span><span>20.6M</span>
+          <span>Entities (Wikidata, with 2026 Wikipedia)</span><span>8.99M</span>
           <span>Relation types</span><span>822</span>
-          <span>Open time (memory-mapped)</span><span>0.2 s</span>
-          <span>Cold start to first answer</span><span>0.4 s</span>
-          <span>Network calls per answer</span><span>0</span>
+          <span>Behind a missing fact: all of Wikidata</span><span>122M</span>
           <span>LLM calls per answer</span><span>0</span>
+          <span>Kept after you leave</span><span>nothing</span>
         </div>
+        <p class="side-note">Each answer shows its time in the engine and with the network. On the desktop app the same engine answers offline.</p>
       </div>
       <div class="panel">
         <h3>Next: a voice call</h3>
@@ -804,7 +787,7 @@ html{scroll-behavior:smooth}
    signupEndpoint: an HTTPS URL that accepts a JSON POST of the form (here: Formspree; it answers JSON when sent Accept: application/json).
    contact: an email address; without an endpoint, the form opens a prefilled email to it.
    bookingUrl: a scheduling link (Calendly etc.) shown after a successful sign-up. */
-const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory", youtube:"", linkedin:"", contact:"", signupEndpoint:"https://formspree.io/f/xyekknzv", bookingUrl:"" };
+const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory_sdk", youtube:"", linkedin:"", contact:"", signupEndpoint:"https://formspree.io/f/xyekknzv", bookingUrl:"" };
 
 /* channels */
 (function(){
@@ -1000,44 +983,141 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
   range.addEventListener('input',render); addEventListener('resize',render); render();
 })();
 
-/* demo chat: recorded answers */
-const KB=[{"k": ["eiffel", "tower", "country"], "q": "Which country is the Eiffel Tower in?", "a": "The Eiffel Tower is in <strong>France</strong>.", "chain": [["The Eiffel Tower", "country", "France", "Wikipedia"]], "ms": 2.55, "topic": "Eiffel Tower", "steps": []}, {"k": ["godfather", "direct"], "q": "Who directed The Godfather?", "a": "<strong>Francis Ford Coppola</strong> directed The Godfather.", "chain": [["The Godfather", "director", "Francis Ford Coppola", "Wikipedia"]], "ms": 2.34, "topic": "Coppola", "steps": []}, {"k": ["when", "born", "he"], "q": "When was he born?", "a": "Francis Ford Coppola was born on <strong>April 7, 1939</strong>.", "chain": [["Francis Ford Coppola", "born", "April 7, 1939", "Wikipedia, article text"]], "ms": 0.46, "needs": "Coppola", "note": "“he” resolved to the latest answer: Francis Ford Coppola", "topic": "Coppola", "steps": [], "pre": "Who directed The Godfather?"}, {"k": ["marie", "curie", "married", "spouse", "husband"], "q": "Who was Marie Curie married to?", "a": "Marie Curie was married to <strong>Pierre Curie</strong>.", "chain": [["Marie Skłodowska Curie", "spouse (inverse)", "Pierre Curie", "Wikipedia"]], "ms": 20.6, "topic": "Pierre Curie", "steps": []}, {"k": ["brother", "tom", "lives", "lyon"], "q": "My brother Tom lives in Lyon.", "a": "Noted: <strong>Tom</strong> is your brother and lives in <strong>Lyon</strong>.", "chain": [["you", "brother", "Tom", "your memory"], ["Tom", "lives in", "Lyon", "your memory"]], "ms": 1.23, "mem": true, "topic": "Tom", "steps": []}, {"k": ["which", "country", "that", "in"], "q": "Which country is that in?", "a": "Lyon is in <strong>France</strong>.", "chain": [["Tom", "lives in", "Lyon", "your memory"], ["Lyon", "country", "France", "Wikipedia"]], "ms": 6.23, "needs": "Tom", "note": "“that” resolved to Lyon from your memory; the chain crosses two modules", "topic": "Tom", "steps": [], "pre": "My brother Tom lives in Lyon."}, {"k": ["tom", "born", "1950"], "q": "Tom was born in 1950.", "a": "Noted: Tom was born in <strong>1950</strong>.", "chain": [["Tom", "born", "1950", "your memory"]], "ms": 0.63, "mem": true, "topic": "Tom", "steps": [], "pre": "My brother Tom lives in Lyon."}, {"k": ["tom", "older", "director", "godfather"], "q": "Is Tom older than the director of The Godfather?", "a": "<strong>No.</strong> Tom (1950) is younger than Francis Ford Coppola (1939).", "chain": [["Tom", "born", "1950", "your memory"], ["Francis Ford Coppola", "born", "April 7, 1939", "Wikipedia, article text"]], "steps": ["'Tom' -> Tom (named in the question (conversation))", "'The Godfather' -> The Godfather (named in the question (conversation))", "director of The Godfather -> Francis Ford Coppola", "born Tom: 1950; Francis Ford Coppola: April 7, 1939", "compare -> Tom is not older -> no"], "ms": 1.42, "topic": "Tom", "pre": "Tom was born in 1950."}, {"k": ["films", "both", "pacino", "niro"], "q": "Which films starred both Al Pacino and Robert De Niro?", "a": "<strong>The Godfather Part II</strong>, The Godfather Trilogy, <strong>Heat</strong>, The Godfather Saga, Righteous Kill.", "chain": [["Alfredo James Pacino", "cast member (inverse)", "The Godfather Part II", "Wikipedia"], ["Robert Anthony De Niro", "cast member (inverse)", "The Godfather Part II", "Wikipedia"]], "steps": ["linked to Alfredo James Pacino: 59", "linked to Robert Anthony De Niro: 122", "AND -> 7"], "ms": 3.36, "topic": "Pacino"}, {"k": ["how", "many", "members", "u2"], "q": "How many members does U2 have?", "a": "<strong>4</strong>: Larry Mullen, jr., Adam Charles Clayton, David Howell Evans, Paul David Hewson.", "chain": [["U2", "member of (inverse)", "Larry Mullen, jr.", "Wikipedia"], ["U2", "member of (inverse)", "Adam Charles Clayton", "Wikipedia"], ["U2", "member of (inverse)", "David Howell Evans", "Wikipedia"], ["U2", "member of (inverse)", "Paul David Hewson", "Wikipedia"]], "steps": ["members of U2 -> Larry Mullen, jr., Adam Charles Clayton, David Howell Evans (+1)", "count -> 4"], "ms": 1.26, "topic": "U2"}, {"k": ["which", "them", "oldest"], "q": "Which of them is the oldest?", "a": "<strong>Adam Charles Clayton</strong>, born 13 March 1960.", "chain": [["U2", "member of (inverse)", "Adam Charles Clayton", "Wikipedia"], ["Adam Charles Clayton", "born", "13 March 1960", "Wikipedia, article text"]], "steps": ["the last answer set: members of U2", "dates known for 4 of 4", "oldest -> Adam Charles Clayton (13 March 1960)"], "ms": 0.48, "needs": "U2", "note": "“them” = the last answer set: the members of U2", "topic": "U2", "pre": "How many members does U2 have?"}, {"k": ["paris", "france", "rome", "is", "to"], "q": "Paris is to France as Rome is to what?", "a": "<strong>Italy</strong>. Rome is to Italy as Paris is to France.", "chain": [["Rome", "capital (inverse)", "Italy", "Wikipedia"]], "steps": ["Paris -> France: P17; -P36", "from Rome along the same relations -> Italy (2 relations agree)"], "ms": 1.38, "topic": "Italy"}, {"k": ["what", "if", "tom", "moved", "kyoto"], "q": "What if Tom moved to Kyoto?", "a": "Then Tom lives in <strong>Kyoto</strong> instead of Lyon: country <strong>Japan</strong> instead of France, the Katsura and Kamo rivers instead of the Rhône and Saône. Nothing is written to memory.", "chain": [["Tom", "lives in", "Kyoto", "assumed"], ["Kyoto", "country", "Japan", "Wikipedia"]], "steps": ["suppose: Tom moved to Kyoto", "assume Tom — lives_in — Kyoto", "instead of Tom — lives_in — Lyon", "consequence: Kyoto — country — Japan"], "ms": 12.38, "topic": "Tom", "pre": "My brother Tom lives in Lyon."}];
-const log=document.getElementById('log'), sug=document.getElementById('suggest'), form=document.getElementById('ask'), input=document.getElementById('q');
-let topic=null, asked=new Set();
-const order=KB.map((_,i)=>i);
-function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function add(html,cls){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
-function renderSuggest(){
-  sug.innerHTML='';
-  order.map(i=>KB[i]).filter(e=>!asked.has(e.q)&&(!e.needs||e.needs===topic)&&(!e.pre||asked.has(e.pre))).slice(0,3).forEach(e=>{
-    const b=document.createElement('button');b.type='button';b.textContent=e.q;b.onclick=()=>ask(e.q);sug.appendChild(b)});
-}
-function match(text){
-  const t=text.toLowerCase(); const exact=KB.find(e=>e.q.toLowerCase()===t.trim()); if(exact)return exact;
-  let best=null,score=0;
-  KB.forEach(e=>{if((e.needs&&e.needs!==topic)||(e.pre&&!asked.has(e.pre)))return;const s=e.k.filter(w=>t.includes(w)).length/e.k.length;if(s>score){score=s;best=e}});
-  return score>=.5?best:null;
-}
-function answer(e){
-  const rows=e.chain.map((c,i)=>`<div class="row"><span class="n">${i+1}</span><span>${esc(c[0])} <span class="rel">—${esc(c[1])}→</span> ${esc(c[2])} <span class="src">· ${esc(c[3])}</span></span></div>`).join('');
-  const steps=(e.steps||[]).map(t=>`<div class="row"><span class="n">›</span><span>${esc(t)}</span></div>`).join('');
-  const hops=e.chain.length;
-  const what=e.mem?'written to memory':(e.steps&&e.steps.length?`program · ${e.steps.length} steps`:hops+(hops>1?' hops':' hop'));
-  return `<div class="a">${e.a}</div>${e.note?`<div class="meta" style="margin-top:6px">${esc(e.note)}</div>`:''}<div class="chain">${rows}</div>${steps?`<div class="chain">${steps}</div>`:''}<div class="meta"><span class="fast">${e.ms.toFixed(2)} ms</span><span>${what}</span><span>0 LLM calls · offline</span></div>`;
-}
-function ask(text){
-  text=text.trim(); if(!text)return;
-  add(esc(text),'user'); input.value='';
-  const e=match(text);
-  setTimeout(()=>{
-    if(e){add(answer(e),'bot');asked.add(e.q);topic=e.topic}
-    else add(`<div class="a">This preview replays recorded answers, so it can’t answer that one yet.</div><div class="meta">Pick a suggested question below. Free questions open with the public beta.</div>`,'bot');
-    renderSuggest();
-  },140);
-}
-form.addEventListener('submit',ev=>{ev.preventDefault();ask(input.value)});
-/* opening state: one answered example */
-add(esc(KB[0].q),'user'); add(answer(KB[0]),'bot'); asked.add(KB[0].q); topic=KB[0].topic; renderSuggest();
+/* live demo: the engine on api.1agi.io over its demo stream - no key, nothing stored, this chat's memory ends with
+   the page. One question at a time; the server's demo limits (a few a minute) are waited out here.
+   ?api=ws://host:port points the page at another server (local testing). */
+(function(){
+  const param=new URLSearchParams(location.search).get('api');
+  const API=(param&&/^wss?:\/\/[A-Za-z0-9.:-]+$/.test(param)?param:'wss://api.1agi.io')+'/v1/demo/stream';
+  const log=document.getElementById('log'), sug=document.getElementById('suggest'), form=document.getElementById('ask'),
+        input=document.getElementById('q'), btn=document.getElementById('ask-btn'), pill=document.getElementById('demo-status');
+  // a guided path: `right` = only straight after the question it follows ("he", "that", "them" point back)
+  const PATH=[
+    {q:'Which country is the Eiffel Tower in?'},
+    {q:'Who directed The Godfather?'},
+    {q:'When was he born?',after:'Who directed The Godfather?',right:true},
+    {q:'My brother Tom lives in Lyon.'},
+    {q:'Which country is that in?',after:'My brother Tom lives in Lyon.',right:true},
+    {q:'Tom was born in 1950.',after:'My brother Tom lives in Lyon.'},
+    {q:'Is Tom older than the director of The Godfather?',after:'Tom was born in 1950.',also:'Who directed The Godfather?'},
+    {q:'How many members does U2 have?'},
+    {q:'Which of them is the oldest?',after:'How many members does U2 have?',right:true},
+    {q:'Paris is to France as Rome is to what?'},
+    {q:'Who was Marie Curie married to?'},
+  ];
+  let ws=null, opening=null, closeWhy='', pending=null, asked=[];
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function add(html,cls){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
+  function busy(on){btn.disabled=on;sug.querySelectorAll('button').forEach(b=>b.disabled=on)}
+  function open(e){
+    if(asked.includes(e.q))return false;
+    if(e.right)return asked[asked.length-1]===e.after;
+    return (!e.after||asked.includes(e.after))&&(!e.also||asked.includes(e.also));
+  }
+  function renderSuggest(){
+    sug.innerHTML='';
+    PATH.filter(open).sort((a,b)=>(b.right?1:0)-(a.right?1:0)).slice(0,3).forEach(e=>{
+      const b=document.createElement('button');b.type='button';b.textContent=e.q;b.onclick=()=>ask(e.q);sug.appendChild(b)});
+  }
+  // the answer's own words, its values in bold (marked on the plain text, then escaped)
+  function bold(text,labels){
+    const marks=[];
+    labels.filter(l=>l&&l.length>1).sort((a,b)=>b.length-a.length).forEach(l=>{
+      for(let i=text.indexOf(l);i>=0;i=text.indexOf(l,i+l.length))
+        if(!marks.some(m=>i<m[1]&&i+l.length>m[0]))marks.push([i,i+l.length]);
+    });
+    marks.sort((a,b)=>a[0]-b[0]);
+    let out='',p=0; marks.forEach(([a,b])=>{out+=esc(text.slice(p,a))+'<strong>'+esc(text.slice(a,b))+'</strong>';p=b});
+    return out+esc(text.slice(p));
+  }
+  function src(x){                                 // the engine's source names, in plain words (no internal ids)
+    x=String(x).toLowerCase();
+    if(x.startsWith('conversation')||x.startsWith('memory'))return 'this chat';
+    if(x.startsWith('wikipedia'))return x.includes('article')?'Wikipedia, article text':'Wikipedia';
+    if(x.startsWith('wikidata'))return 'Wikidata';
+    return x;
+  }
+  const rel=x=>String(x).replace(/_/g,' ');
+  function chain(rows){
+    return rows.length?`<div class="chain">${rows.map((c,i)=>`<div class="row"><span class="n">${i+1}</span><span>${esc(c[0])} <span class="rel">—${esc(rel(c[1]))}→</span> ${esc(c[2])} <span class="src">· ${esc(src(c[3]))}</span></span></div>`).join('')}</div>`:'';
+  }
+  function wd(id){const q=/^wd:(Q\d+)$/.exec(id||'');return q?`<a href="https://www.wikidata.org/wiki/${q[1]}" target="_blank" rel="noopener">${q[1]}</a>`:''}
+  function answerHTML(a,rtt){
+    if(a.kind==='none'||!(a.values||[]).length&&!a.evidence.length)
+      return `<div class="a">${esc(a.text||"I don't know.")}</div><div class="meta"><span>Nothing in the graph answers that yet. Try a person, a place, a film or a company.</span></div>`;
+    const steps=(a.steps||[]).length?`<div class="chain">${a.steps.map(t=>`<div class="row"><span class="n">›</span><span>${esc(t)}</span></div>`).join('')}</div>`:'';
+    const ids=(a.values||[]).map(v=>wd(v.id)).filter(Boolean).slice(0,3);
+    const what=(a.steps||[]).length?`program · ${a.steps.length} steps`:a.evidence.length+(a.evidence.length>1?' hops':' hop');
+    const conf=a.confidence==null?'':` title="calibrated confidence ${Math.round(a.confidence*100)}%"`;
+    return `<div class="a">${bold(a.text,(a.values||[]).map(v=>v.label))}</div>`+
+      chain(a.evidence.map(e=>[e.subject,e.relation,e.object,e.source]))+steps+
+      `<div class="meta"${conf}><span class="fast">${a.ms.toFixed(1)} ms in the engine</span><span>${Math.round(rtt)} ms with the network</span><span>${what}</span>${ids.length?`<span>Wikidata ${ids.join(', ')}</span>`:''}<span>0 LLM calls</span></div>`;
+  }
+  function patchHTML(p,rtt){
+    const lab={}; p.nodes.forEach(n=>lab[n.id]=n.id==='u:owner'?'you':n.label);
+    const rows=p.facts.map(f=>[lab[f.subject]||f.subject,f.relation,f.literal?f.object:(lab[f.object]||f.object),'this chat']);
+    const links=p.links.map(l=>`${esc(lab[l.node]||l.node)} = ${wd(l.same_as)}`).filter(x=>!x.endsWith('= '));
+    const head=rows.length?'Noted. This chat remembers it, and the next question can use it.':'Nothing to note in that.';
+    const fig=!rows.length&&p.pending.length?`<span class="fig" data-key="${esc(p.pending[0])}">checking for a double meaning…</span>`:'';
+    return `<div class="a">${esc(head)}</div>${chain(rows)}<div class="meta"><span class="fast">${p.ms.toFixed(1)} ms to read</span><span>${Math.round(rtt)} ms with the network</span>${links.length?`<span>linked: ${links.join(', ')}</span>`:''}${fig}</div>`;
+  }
+  function readingHTML(r){
+    return `<div class="a">A double meaning: “<strong>${esc(r.pivot)}</strong>” can mean ${esc(r.sense_a)}, or ${esc(r.sense_b)}.</div><div class="meta"><span>${esc(r.type)}</span><span>read in the background, after the reply</span></div>`;
+  }
+  function failText(code){
+    if(code===4403)return 'The live demo is not open for this page.';
+    if(code===4429)return closeWhy?closeWhy[0].toUpperCase()+closeWhy.slice(1)+'.':'The demo is busy. Try again in a minute.';
+    return 'The live demo can’t be reached right now. Try again in a moment.';
+  }
+  function finish(){pending=null;busy(false);renderSuggest()}
+  function onMessage(m){
+    if(m.type==='reading'){
+      (m.settled||[]).forEach(k=>log.querySelectorAll('.fig').forEach(el=>{if(el.dataset.key===k)el.textContent=(m.readings||[]).length?'a double meaning, below':'no double meaning found'}));
+      (m.readings||[]).forEach(r=>add(readingHTML(r),'bot note'));
+      return;
+    }
+    if(!pending)return;
+    const rtt=performance.now()-pending.t0;
+    if(m.type==='answer'){pending.el.innerHTML=answerHTML(m.answer,rtt);asked.push(pending.text);finish()}
+    else if(m.type==='patch'){pending.el.innerHTML=patchHTML(m.patch,rtt);asked.push(pending.text);finish()}
+    else if(m.type==='rate_limited'&&pending.tries<4){
+      pending.tries++;
+      pending.el.innerHTML=`<div class="a wait">The demo takes a few questions a minute. Asking again in ${Math.ceil(m.retry_after)} s…</div>`;
+      const p=pending; setTimeout(()=>{if(pending===p&&ws){p.t0=performance.now();ws.send(JSON.stringify({type:'utterance',text:p.text}))}},m.retry_after*1000+150);
+    }
+    else if(m.type==='error'||m.type==='rate_limited'){pending.el.innerHTML=`<div class="a">${esc(m.error||'Too many questions for now. Try again in a minute.')}</div>`;finish()}
+  }
+  function connect(){
+    if(ws&&ws.readyState===WebSocket.OPEN)return Promise.resolve();
+    if(opening)return opening;
+    closeWhy='';
+    opening=new Promise((resolve,reject)=>{
+      let s, ok=false;
+      try{s=new WebSocket(API)}catch(e){opening=null;reject(0);return}
+      s.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(e){return}
+        if(!ok){if(m.type==='hello'){ok=true;ws=s;opening=null;resolve()}else if(m.type==='error')closeWhy=m.error||'';return}
+        onMessage(m)};
+      s.onclose=ev=>{
+        if(!ok){opening=null;reject(ev.code);return}
+        if(ws===s)ws=null;
+        if(pending){pending.el.innerHTML=`<div class="a">The connection closed.</div>`;finish()}
+        if(asked.length){add(`<div class="a">The connection closed, so this chat’s memory is gone. The next question starts a new one.</div>`,'bot note');asked=[];renderSuggest()}
+      };
+    });
+    return opening;
+  }
+  async function ask(text){
+    text=text.trim(); if(!text||pending)return;
+    add(esc(text),'user'); input.value='';
+    pending={text,el:add('<div class="a wait">Thinking…</div>','bot'),t0:0,tries:0}; busy(true);
+    try{await connect()}catch(code){pending.el.innerHTML=`<div class="a">${esc(failText(code))}</div>`;pill.textContent='Live demo · offline';finish();return}
+    pending.t0=performance.now();
+    ws.send(JSON.stringify({type:'utterance',text}));
+  }
+  form.addEventListener('submit',ev=>{ev.preventDefault();ask(input.value)});
+  add(`<div class="a">Ask about any person, place, film or company, or tell me something about yourself and then ask about it. Answers come live from the engine, with the facts each one used.</div><div class="meta"><span>Nothing you type is stored or used for training. This chat’s memory ends when you leave the page.</span></div>`,'bot note');
+  renderSuggest();
+})();
 </script>
 
 </body>
