@@ -161,6 +161,8 @@ form.ask input::placeholder{color:var(--muted)}
 .meta a:hover{color:var(--ink)}
 form.ask button[disabled]{opacity:.6;cursor:progress}
 .side-note{margin-top:12px;font-size:13px;color:var(--muted)}
+.start{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:0 16px 14px}
+.meta.timing{margin-top:4px;font-size:11.5px;opacity:.85}
 
 /* how */
 .steps{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--accent)}
@@ -433,6 +435,7 @@ html{scroll-behavior:smooth}
     <div class="chat">
       <div class="chat-head"><span class="chat-name">Wikipedia memory</span><span class="pill" id="demo-status" title="Answers come live from the engine on our server (api.1agi.io). Nothing you type is stored or used for training, and this chat’s memory ends when you leave the page.">Live · nothing stored</span></div>
       <div class="log" id="log" aria-live="polite"></div>
+      <div class="start" id="start"><button class="btn primary" type="button" id="start-btn">Start the live demo</button><span class="meta" id="start-note">Connects to the engine on our server. Nothing you type is kept.</span></div>
       <div class="suggest" id="suggest"></div>
       <form class="ask" id="ask">
         <label for="q" style="position:absolute;left:-9999px">Your question</label>
@@ -990,7 +993,8 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
   const param=new URLSearchParams(location.search).get('api');
   const API=(param&&/^wss?:\/\/[A-Za-z0-9.:-]+$/.test(param)?param:'wss://api.1agi.io')+'/v1/demo/stream';
   const log=document.getElementById('log'), sug=document.getElementById('suggest'), form=document.getElementById('ask'),
-        input=document.getElementById('q'), btn=document.getElementById('ask-btn'), pill=document.getElementById('demo-status');
+        input=document.getElementById('q'), btn=document.getElementById('ask-btn'), pill=document.getElementById('demo-status'),
+        startRow=document.getElementById('start'), startBtn=document.getElementById('start-btn'), startNote=document.getElementById('start-note');
   // a guided path: `right` = only straight after the question it follows ("he", "that", "them" point back)
   const PATH=[
     {q:'Which country is the Eiffel Tower in?'},
@@ -1042,6 +1046,14 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
     return rows.length?`<div class="chain">${rows.map((c,i)=>`<div class="row"><span class="n">${i+1}</span><span>${esc(c[0])} <span class="rel">—${esc(rel(c[1]))}→</span> ${esc(c[2])} <span class="src">· ${esc(src(c[3]))}</span></span></div>`).join('')}</div>`:'';
   }
   function wd(id){const q=/^wd:(Q\d+)$/.exec(id||'');return q?`<a href="https://www.wikidata.org/wiki/${q[1]}" target="_blank" rel="noopener">${q[1]}</a>`:''}
+  // where the engine's time went (no network, no authentication): the graph search first
+  const STAGE=[['graph','graph search'],['program','program'],['linking','linking names'],['names','finding names'],['choosing','choosing'],
+    ['text','article text'],['repair','repair'],['utterance','reading the question'],['answer','wording'],['other','bookkeeping']];
+  function timingHTML(t){
+    if(!t)return '';
+    const parts=STAGE.filter(([k])=>t[k]>=0.05).map(([k,w])=>`${w} ${t[k]<10?t[k].toFixed(1):Math.round(t[k])}`);
+    return parts.length?`<div class="meta timing" title="Time inside the engine, by stage, in ms. Network and connection are not in it.">${parts.join(' · ')} ms</div>`:'';
+  }
   function answerHTML(a,rtt){
     if(a.kind==='none'||!(a.values||[]).length&&!a.evidence.length)
       return `<div class="a">${esc(a.text||"I don't know.")}</div><div class="meta"><span>${a.guess?'The engine found an answer but trusts it too little to say, so it tells you instead of guessing.':'Nothing in the graph answers that yet.'} Try a person, a place, a film or a company.</span></div>`;
@@ -1051,7 +1063,7 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
     const conf=a.confidence==null?'':` title="calibrated confidence ${Math.round(a.confidence*100)}%"`;
     return `<div class="a">${bold(a.text,(a.values||[]).map(v=>v.label))}</div>`+
       chain(a.evidence.map(e=>[e.subject,e.relation,e.object,e.source]))+steps+
-      `<div class="meta"${conf}><span class="fast">${a.ms.toFixed(1)} ms in the engine</span><span>${Math.round(rtt)} ms with the network</span><span>${what}</span>${ids.length?`<span>Wikidata ${ids.join(', ')}</span>`:''}<span>0 LLM calls</span></div>`;
+      `<div class="meta"${conf}><span class="fast">${a.ms.toFixed(1)} ms in the engine</span><span>${Math.round(rtt)} ms with the network</span><span>${what}</span>${ids.length?`<span>Wikidata ${ids.join(', ')}</span>`:''}<span>0 LLM calls</span></div>`+timingHTML(a.timing);
   }
   function patchHTML(p,rtt){
     const lab={}; p.nodes.forEach(n=>lab[n.id]=n.id==='u:owner'?'you':n.label);
@@ -1111,10 +1123,23 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
     add(esc(text),'user'); input.value='';
     pending={text,el:add('<div class="a wait">Thinking…</div>','bot'),t0:0,tries:0}; busy(true);
     try{await connect()}catch(code){pending.el.innerHTML=`<div class="a">${esc(failText(code))}</div>`;pill.textContent='Live demo · offline';finish();return}
+    startRow.hidden=true;
     pending.t0=performance.now();
     ws.send(JSON.stringify({type:'utterance',text}));
   }
   form.addEventListener('submit',ev=>{ev.preventDefault();ask(input.value)});
+  // the start button: opens the connection before the first question (the engine itself is kept warm on the
+  // server); typing a question first works too
+  async function start(){
+    if(ws&&ws.readyState===WebSocket.OPEN)return;
+    startBtn.disabled=true; startBtn.textContent='Connecting…';
+    const t0=performance.now();
+    try{await connect()}catch(code){startBtn.disabled=false;startBtn.textContent='Try again';startNote.textContent=failText(code);pill.textContent='Live demo · offline';return}
+    startRow.hidden=true; pill.textContent='Live · nothing stored';
+    add(`<div class="a">Connected in ${Math.round(performance.now()-t0)} ms. Ask anything, or pick a question below.</div>`,'bot note');
+    input.focus({preventScroll:true});
+  }
+  startBtn.addEventListener('click',start);
   add(`<div class="a">Ask about any person, place, film or company, or tell me something about yourself and then ask about it. Answers come live from the engine, with the facts each one used.</div><div class="meta"><span>Nothing you type is stored or used for training. This chat’s memory ends when you leave the page.</span></div>`,'bot note');
   renderSuggest();
 })();
