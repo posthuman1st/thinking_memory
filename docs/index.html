@@ -1044,7 +1044,7 @@ const CONFIG = { app:"", github:"https://github.com/posthuman1st/thinking_memory
   function wd(id){const q=/^wd:(Q\d+)$/.exec(id||'');return q?`<a href="https://www.wikidata.org/wiki/${q[1]}" target="_blank" rel="noopener">${q[1]}</a>`:''}
   function answerHTML(a,rtt){
     if(a.kind==='none'||!(a.values||[]).length&&!a.evidence.length)
-      return `<div class="a">${esc(a.text||"I don't know.")}</div><div class="meta"><span>Nothing in the graph answers that yet. Try a person, a place, a film or a company.</span></div>`;
+      return `<div class="a">${esc(a.text||"I don't know.")}</div><div class="meta"><span>${a.guess?'The engine found an answer but trusts it too little to say, so it tells you instead of guessing.':'Nothing in the graph answers that yet.'} Try a person, a place, a film or a company.</span></div>`;
     const steps=(a.steps||[]).length?`<div class="chain">${a.steps.map(t=>`<div class="row"><span class="n">›</span><span>${esc(t)}</span></div>`).join('')}</div>`:'';
     const ids=(a.values||[]).map(v=>wd(v.id)).filter(Boolean).slice(0,3);
     const what=(a.steps||[]).length?`program · ${a.steps.length} steps`:a.evidence.length+(a.evidence.length>1?' hops':' hop');
