@@ -126,7 +126,7 @@ section.block{padding-block:88px 0}
 .demo{display:grid;grid-template-columns:1.4fr .6fr;gap:20px}
 .demo > *{min-width:0}
 @media (max-width:900px){.demo{grid-template-columns:1fr}}
-.chat{background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;display:flex;flex-direction:column;min-height:560px}
+.chat{position:relative;background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;display:flex;flex-direction:column;min-height:560px}
 .chat-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
 .chat-name{font-weight:600;color:var(--ink)}
 .pill{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted);white-space:nowrap}
@@ -161,7 +161,10 @@ form.ask input::placeholder{color:var(--muted)}
 .meta a:hover{color:var(--ink)}
 form.ask button[disabled]{opacity:.6;cursor:progress}
 .side-note{margin-top:12px;font-size:13px;color:var(--muted)}
-.start{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:0 16px 14px}
+/* the start: over the whole chat, the chat blurred behind it until the visitor connects */
+.start{position:absolute;inset:0;z-index:5;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:rgba(8,11,18,.55);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.start .btn{font-size:17px;padding:14px 26px}
+.start .meta{max-width:30em;font-size:13px;color:var(--text)}
 .meta.timing{margin-top:4px;font-size:11.5px;opacity:.85}
 
 /* how */
@@ -433,9 +436,9 @@ html{scroll-behavior:smooth}
   </div>
   <div class="demo" id="demo-live">
     <div class="chat">
+      <div class="start" id="start"><button class="btn primary" type="button" id="start-btn">Start the live demo</button><span class="meta" id="start-note">Connects to the engine on our server. Nothing you type is kept.</span></div>
       <div class="chat-head"><span class="chat-name">Wikipedia memory</span><span class="pill" id="demo-status" title="Answers come live from the engine on our server (api.1agi.io). Nothing you type is stored or used for training, and this chat’s memory ends when you leave the page.">Live · nothing stored</span></div>
       <div class="log" id="log" aria-live="polite"></div>
-      <div class="start" id="start"><button class="btn primary" type="button" id="start-btn">Start the live demo</button><span class="meta" id="start-note">Connects to the engine on our server. Nothing you type is kept.</span></div>
       <div class="suggest" id="suggest"></div>
       <form class="ask" id="ask">
         <label for="q" style="position:absolute;left:-9999px">Your question</label>
